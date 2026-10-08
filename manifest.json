@@ -1,0 +1,29 @@
+{
+  "manifest_version": "0.3",
+  "name": "mcp-file-server",
+  "display_name": "MCP File Server",
+  "version": "1.0.0",
+  "description": "A secure MCP server that allows Claude to read, write, list, and append files inside a designated workspace.",
+  "author": {
+    "name": "Local Developer"
+  },
+  "server": {
+    "type": "node",
+    "entry_point": "dist/server.js",
+    "mcp_config": {
+      "command": "node",
+      "args": [
+        "${__dirname}/dist/server.js"
+      ]
+    }
+  },
+  "compatibility": {
+    "platforms": [
+      "win32"
+    ],
+    "runtimes": {
+      "node": ">=20"
+    }
+  },
+  "tools_generated": true
+}
