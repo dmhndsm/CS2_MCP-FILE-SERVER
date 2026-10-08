@@ -8,8 +8,9 @@ import { writeFile } from "./tools/write.js";
 import { appendFile } from "./tools/append.js";
 import { strReplace } from "./tools/str_replace.js";
 import { deleteFile } from "./tools/delete.js";
+import { searchFiles } from "./tools/search.js";
+import { moveFile } from "./tools/move.js";
 
-// Your actual workspace folder
 const workspaceRoot =
   "C:/Users/cangu/Documents/JR FILES/GIT/3RD YR/CSPROF2/mcp-file-server/workspace";
 
@@ -19,7 +20,7 @@ function createServer() {
     version: "1.0.0",
   });
 
-  // Workspace information
+  // Workspace info
   server.registerTool(
     "workspace_info",
     {
@@ -37,7 +38,7 @@ function createServer() {
     }
   );
 
-  // Read a file
+  // Read
   server.registerTool(
     "read",
     {
@@ -74,7 +75,7 @@ function createServer() {
     }
   );
 
-  // List files
+  // List
   server.registerTool(
     "list",
     {
@@ -111,7 +112,7 @@ function createServer() {
     }
   );
 
-  // Write a file
+  // Write
   server.registerTool(
     "write",
     {
@@ -149,7 +150,7 @@ function createServer() {
     }
   );
 
-  // Append to a file
+  // Append
   server.registerTool(
     "append",
     {
@@ -187,7 +188,7 @@ function createServer() {
     }
   );
 
-  // Replace text in a file
+  // Replace
   server.registerTool(
     "str_replace",
     {
@@ -195,12 +196,8 @@ function createServer() {
         "Replace a specific piece of text in a file inside the workspace.",
       inputSchema: {
         path: z.string().describe("Relative path of the file"),
-        oldString: z
-          .string()
-          .describe("Exact text to find and replace"),
-        newString: z
-          .string()
-          .describe("Text that will replace the old text"),
+        oldString: z.string().describe("Exact text to find and replace"),
+        newString: z.string().describe("Text that will replace the old text"),
       },
     },
     async ({ path: filePath, oldString, newString }) => {
@@ -236,7 +233,7 @@ function createServer() {
     }
   );
 
-  // Delete a file
+  // Delete
   server.registerTool(
     "delete",
     {
@@ -263,6 +260,95 @@ function createServer() {
             {
               type: "text",
               text: `Error deleting file: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Search
+  server.registerTool(
+    "search",
+    {
+      description: "Search for text inside workspace files.",
+      inputSchema: {
+        query: z
+          .string()
+          .min(1)
+          .describe("Text to search for inside workspace files"),
+      },
+    },
+    async ({ query }) => {
+      try {
+        const results = await searchFiles(workspaceRoot, query);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text:
+                results.length > 0
+                  ? results.join("\n")
+                  : `No files found containing: ${query}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error searching files: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Move
+  server.registerTool(
+    "move",
+    {
+      description: "Move or rename a file inside the workspace.",
+      inputSchema: {
+        sourcePath: z
+          .string()
+          .describe("Current relative path of the file"),
+        destinationPath: z
+          .string()
+          .describe("New relative path of the file"),
+      },
+    },
+    async ({ sourcePath, destinationPath }) => {
+      try {
+        await moveFile(
+          workspaceRoot,
+          sourcePath,
+          destinationPath
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `File moved successfully: ${sourcePath} -> ${destinationPath}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error moving file: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
