@@ -1,12 +1,12 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
-import path from "node:path";
 
 import { listFiles } from "./tools/list.js";
 import { readFile } from "./tools/read.js";
 import { writeFile } from "./tools/write.js";
 import { appendFile } from "./tools/append.js";
+import { strReplace } from "./tools/str_replace.js";
 
 // Your actual workspace folder
 const workspaceRoot =
@@ -176,6 +176,55 @@ function createServer() {
             {
               type: "text",
               text: `Error appending to file: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Replace text in a file
+  server.registerTool(
+    "str_replace",
+    {
+      description:
+        "Replace a specific piece of text in a file inside the workspace.",
+      inputSchema: {
+        path: z.string().describe("Relative path of the file"),
+        oldString: z
+          .string()
+          .describe("Exact text to find and replace"),
+        newString: z
+          .string()
+          .describe("Text that will replace the old text"),
+      },
+    },
+    async ({ path: filePath, oldString, newString }) => {
+      try {
+        await strReplace(
+          workspaceRoot,
+          filePath,
+          oldString,
+          newString
+        );
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Text replaced successfully: ${filePath}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error replacing text: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
