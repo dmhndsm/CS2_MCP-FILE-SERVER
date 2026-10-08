@@ -10,6 +10,7 @@ import { strReplace } from "./tools/str_replace.js";
 import { deleteFile } from "./tools/delete.js";
 import { searchFiles } from "./tools/search.js";
 import { moveFile } from "./tools/move.js";
+import { makeDirectory } from "./tools/mkdir.js";
 
 const workspaceRoot =
   "C:/Users/cangu/Documents/JR FILES/GIT/3RD YR/CSPROF2/mcp-file-server/workspace";
@@ -349,6 +350,45 @@ function createServer() {
             {
               type: "text",
               text: `Error moving file: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Make directory
+  server.registerTool(
+    "mkdir",
+    {
+      description: "Create a directory inside the workspace.",
+      inputSchema: {
+        path: z
+          .string()
+          .describe("Relative path of the directory to create"),
+      },
+    },
+    async ({ path: directoryPath }) => {
+      try {
+        await makeDirectory(workspaceRoot, directoryPath);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Directory created successfully: ${directoryPath}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error creating directory: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
