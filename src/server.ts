@@ -11,6 +11,7 @@ import { deleteFile } from "./tools/delete.js";
 import { searchFiles } from "./tools/search.js";
 import { moveFile } from "./tools/move.js";
 import { makeDirectory } from "./tools/mkdir.js";
+import { getFileInfo } from "./tools/file_info.js";
 
 const workspaceRoot =
   "C:/Users/cangu/Documents/JR FILES/GIT/3RD YR/CSPROF2/mcp-file-server/workspace";
@@ -389,6 +390,48 @@ function createServer() {
             {
               type: "text",
               text: `Error creating directory: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // File info
+  server.registerTool(
+    "file_info",
+    {
+      description: "Get information about a file inside the workspace.",
+      inputSchema: {
+        path: z.string().describe("Relative path of the file"),
+      },
+    },
+    async ({ path: filePath }) => {
+      try {
+        const info = await getFileInfo(workspaceRoot, filePath);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: [
+                `Name: ${info.name}`,
+                `Size: ${info.size} bytes`,
+                `Type: ${info.type}`,
+                `Modified: ${info.modified}`,
+              ].join("\n"),
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error getting file information: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
