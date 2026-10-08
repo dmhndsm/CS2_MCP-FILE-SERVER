@@ -7,6 +7,7 @@ import { readFile } from "./tools/read.js";
 import { writeFile } from "./tools/write.js";
 import { appendFile } from "./tools/append.js";
 import { strReplace } from "./tools/str_replace.js";
+import { deleteFile } from "./tools/delete.js";
 
 // Your actual workspace folder
 const workspaceRoot =
@@ -225,6 +226,43 @@ function createServer() {
             {
               type: "text",
               text: `Error replacing text: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    }
+  );
+
+  // Delete a file
+  server.registerTool(
+    "delete",
+    {
+      description: "Delete a file inside the workspace.",
+      inputSchema: {
+        path: z.string().describe("Relative path of the file to delete"),
+      },
+    },
+    async ({ path: filePath }) => {
+      try {
+        await deleteFile(workspaceRoot, filePath);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `File deleted successfully: ${filePath}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error deleting file: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
