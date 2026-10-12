@@ -25,7 +25,7 @@ const workspaceRoot = process.env.WORKSPACE_ROOT
   ? path.resolve(process.env.WORKSPACE_ROOT)
   : path.resolve(__dirname, "../workspace");
 
-function createServer() {
+export function createServer() {
   const server = new McpServer({
     name: "secure-mcp-file-server",
     version: "1.0.0",
@@ -534,6 +534,7 @@ function createServer() {
   return server;
 }
 
-void serveStdio(createServer);
-
-console.error("Secure MCP File Server running on stdio");
+if (process.env.MCP_TRANSPORT !== "http") {
+  void serveStdio(createServer);
+  console.error("Secure MCP File Server running on stdio");
+}
