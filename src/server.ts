@@ -2,6 +2,9 @@ import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { listFiles } from "./tools/list.js";
 import { readFile } from "./tools/read.js";
 import { writeFile } from "./tools/write.js";
@@ -15,8 +18,12 @@ import { getFileInfo } from "./tools/file_info.js";
 import { copyFile } from "./tools/copy.js";
 import { getTree } from "./tools/tree.js";
 
-const workspaceRoot =
-  "C:/Users/cangu/Documents/JR FILES/GIT/3RD YR/CSPROF2/mcp-file-server/workspace";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const workspaceRoot = process.env.WORKSPACE_ROOT
+  ? path.resolve(process.env.WORKSPACE_ROOT)
+  : path.resolve(__dirname, "../workspace");
 
 function createServer() {
   const server = new McpServer({
