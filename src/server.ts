@@ -46,7 +46,7 @@ export function createServer() {
           },
         ],
       };
-    }
+    },
   );
 
   // Read
@@ -83,7 +83,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // List
@@ -101,9 +101,7 @@ export function createServer() {
             {
               type: "text",
               text:
-                files.length > 0
-                  ? files.join("\n")
-                  : "The workspace is empty.",
+                files.length > 0 ? files.join("\n") : "The workspace is empty.",
             },
           ],
         };
@@ -120,7 +118,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Write
@@ -158,7 +156,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Append
@@ -196,7 +194,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Replace
@@ -213,12 +211,7 @@ export function createServer() {
     },
     async ({ path: filePath, oldString, newString }) => {
       try {
-        await strReplace(
-          workspaceRoot,
-          filePath,
-          oldString,
-          newString
-        );
+        await strReplace(workspaceRoot, filePath, oldString, newString);
 
         return {
           content: [
@@ -241,7 +234,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Delete
@@ -278,7 +271,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Search
@@ -321,7 +314,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Move
@@ -330,21 +323,13 @@ export function createServer() {
     {
       description: "Move or rename a file inside the workspace.",
       inputSchema: {
-        sourcePath: z
-          .string()
-          .describe("Current relative path of the file"),
-        destinationPath: z
-          .string()
-          .describe("New relative path of the file"),
+        sourcePath: z.string().describe("Current relative path of the file"),
+        destinationPath: z.string().describe("New relative path of the file"),
       },
     },
     async ({ sourcePath, destinationPath }) => {
       try {
-        await moveFile(
-          workspaceRoot,
-          sourcePath,
-          destinationPath
-        );
+        await moveFile(workspaceRoot, sourcePath, destinationPath);
 
         return {
           content: [
@@ -367,7 +352,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Make directory
@@ -376,9 +361,7 @@ export function createServer() {
     {
       description: "Create a directory inside the workspace.",
       inputSchema: {
-        path: z
-          .string()
-          .describe("Relative path of the directory to create"),
+        path: z.string().describe("Relative path of the directory to create"),
       },
     },
     async ({ path: directoryPath }) => {
@@ -406,7 +389,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // File info
@@ -448,7 +431,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Copy
@@ -457,9 +440,7 @@ export function createServer() {
     {
       description: "Copy a file inside the workspace.",
       inputSchema: {
-        sourcePath: z
-          .string()
-          .describe("Relative path of the source file"),
+        sourcePath: z.string().describe("Relative path of the source file"),
         destinationPath: z
           .string()
           .describe("Relative path of the copied file"),
@@ -467,11 +448,7 @@ export function createServer() {
     },
     async ({ sourcePath, destinationPath }) => {
       try {
-        await copyFile(
-          workspaceRoot,
-          sourcePath,
-          destinationPath
-        );
+        await copyFile(workspaceRoot, sourcePath, destinationPath);
 
         return {
           content: [
@@ -494,7 +471,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   // Tree
@@ -528,7 +505,7 @@ export function createServer() {
           isError: true,
         };
       }
-    }
+    },
   );
 
   return server;

@@ -1,13 +1,31 @@
-
 import { createServer } from "./server.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/server";
 import { createServer as createHttpServer } from "node:http";
 
 const PORT = Number(process.env.PORT ?? 3000);
 const HOST = process.env.HOST ?? "127.0.0.1";
+const MCP_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN;
+
+if (!MCP_AUTH_TOKEN || MCP_AUTH_TOKEN.length < 32) {
+  throw new Error(
+    "MCP_AUTH_TOKEN must be set and contain at least 32 characters.",
+  );
+}
 
 const httpServer = createHttpServer(async (req, res) => {
   try {
+    const authorization = req.headers.authorization;
+    const expectedAuthorization = `Bearer ${MCP_AUTH_TOKEN}`;
+
+    if (authorization !== expectedAuthorization) {
+      res.writeHead(401, {
+        "Content-Type": "application/json",
+        "WWW-Authenticate": "Bearer",
+      });
+      res.end(JSON.stringify({ error: "Unauthorized" }));
+      return;
+    }
+
     if (req.url !== "/mcp") {
       res.writeHead(404, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: "Not found. Use /mcp." }));
@@ -22,13 +40,16 @@ const httpServer = createHttpServer(async (req, res) => {
 
     const body = Buffer.concat(chunks).toString("utf8");
 
-    const webRequest = new Request(`http://${req.headers.host ?? `${HOST}:${PORT}`}${req.url}`, {
-      method: req.method,
-      headers: req.headers as HeadersInit,
-      ...(body && req.method !== "GET" && req.method !== "HEAD"
-        ? { body }
-        : {}),
-    });
+    const webRequest = new Request(
+      `http://${req.headers.host ?? `${HOST}:${PORT}`}${req.url}`,
+      {
+        method: req.method,
+        headers: req.headers as HeadersInit,
+        ...(body && req.method !== "GET" && req.method !== "HEAD"
+          ? { body }
+          : {}),
+      },
+    );
 
     const mcpServer = createServer();
     const transport = new WebStandardStreamableHTTPServerTransport({
@@ -39,7 +60,10 @@ const httpServer = createHttpServer(async (req, res) => {
 
     const response = await transport.handleRequest(webRequest);
 
-    res.writeHead(response.status, Object.fromEntries(response.headers.entries()));
+    res.writeHead(
+      response.status,
+      Object.fromEntries(response.headers.entries()),
+    );
 
     if (response.body) {
       for await (const chunk of response.body as unknown as AsyncIterable<Uint8Array>) {
@@ -61,5 +85,7 @@ const httpServer = createHttpServer(async (req, res) => {
 });
 
 httpServer.listen(PORT, HOST, () => {
-  console.log(`MCP Streamable HTTP server listening at http://${HOST}:${PORT}/mcp`);
+  console.log(
+    `MCP Streamable HTTP server listening at http://${HOST}:${PORT}/mcp`,
+  );
 });
