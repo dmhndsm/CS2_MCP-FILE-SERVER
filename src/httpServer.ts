@@ -32,10 +32,29 @@ const httpServer = createHttpServer(async (req, res) => {
       return;
     }
 
+    const MAX_BODY_SIZE = 1024 * 1024; // 1 MB
     const chunks: Buffer[] = [];
+    let bodySize = 0;
 
     for await (const chunk of req) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      bodySize += buffer.length;
+
+      if (bodySize > MAX_BODY_SIZE) {
+        res.writeHead(413, {
+          "Content-Type": "application/json",
+          Connection: "close",
+        });
+        res.end(
+          JSON.stringify({
+            error: "Request body too large. Maximum size is 1 MB.",
+          }),
+        );
+        req.pause();
+        return;
+      }
+
+      chunks.push(buffer);
     }
 
     const body = Buffer.concat(chunks).toString("utf8");
