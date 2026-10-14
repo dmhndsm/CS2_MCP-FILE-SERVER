@@ -27,51 +27,75 @@ Implemented 13 tools:
 
 ### 3. Workspace Security
 - Implemented workspace-based path resolution.
-- Tested outside-workspace paths using MCP Inspector.
-- Confirmed that the tested operations were rejected when paths were outside the workspace.
-- Changed the workspace configuration to support the `WORKSPACE_ROOT` environment variable.
-- Verified that the workspace remained accessible after the configuration change.
+- Added path validation intended to prevent access outside the workspace.
+- Tested multiple outside-workspace paths using MCP Inspector.
+- Confirmed that the tested operations rejected the attempted paths.
+- Added support for the `WORKSPACE_ROOT` environment variable.
+- Attempted symbolic-link escape checks during development.
 
-### 4. Documentation and Version Control
-- Created and updated the README.
-- Maintained the project in a GitHub repository.
+### 4. HTTP Transport and Authentication
+- Added Streamable HTTP transport in `src/httpServer.ts`.
+- Exported `createServer()` for use by the HTTP transport.
+- Configured the default endpoint as `http://127.0.0.1:3000/mcp`.
+- Added required bearer-token authentication through `MCP_AUTH_TOKEN`.
+- Added a minimum token length of 32 characters.
+- Added a 1 MB request-body limit.
+- Tested missing, incorrect, and correct bearer tokens.
+- Tested server startup and MCP tool discovery over HTTP.
+- Confirmed TypeScript compilation passed during development.
+- The exact HTTP 413 response for oversized requests still requires confirmation.
+
+### 5. Documentation and Version Control
+- Created the initial README.
+- Created the four handoff documentation files.
 - Added the workspace placeholder file `.gitkeep`.
+- Maintained the project in Git and GitHub.
+- Committed and pushed the HTTP authentication and request-size-limit changes.
 
 ## Current Work
-- Creating the handoff protocol files.
-- Reviewing workspace security and portability.
-- Preparing for additional deployment and client-integration work.
+- Updating the README to reflect the current implementation.
+- Reviewing the accuracy of the handoff documentation.
+- Preparing for final security verification and client integration.
 
 ## Planned Work
 
-### Priority 1: Handoff Protocol
-- Complete `PROJECT_STATE.md`.
-- Complete `PLAN_LOG.md`.
-- Complete `CHECKPOINTS.md`.
-- Complete `DECISIONS.md`.
+### Priority 1: Handoff Documentation
+- Verify `PROJECT_STATE.md`.
+- Review and update `PLAN_LOG.md`.
+- Review `CHECKPOINTS.md`.
+- Review `DECISIONS.md`.
+- Ensure the handoff files reflect verified project status.
 
-### Priority 2: Security
-- Test additional path traversal cases.
-- Review symbolic-link handling.
-- Add formal automated security tests.
+### Priority 2: Essential Security Verification
+- Confirm the oversized-request response is HTTP 413.
+- Complete any necessary path-traversal regression checks.
+- Review symbolic-link handling and remaining security limitations.
+- Avoid claiming comprehensive security until appropriate tests are complete.
 
 ### Priority 3: Deployment
-- Configure Streamable HTTP transport.
-- Set up an HTTPS tunnel.
-- Configure a process manager for server persistence.
-- Review endpoint authentication and configuration.
+- Review workspace configuration for portability.
+- Configure HTTPS access through a tunnel or suitable deployment environment if required.
+- Configure process management and restart behavior if required.
+- Use a strong randomly generated authentication token.
+- Verify the deployed endpoint before relying on it.
 
 ### Priority 4: Client Integration
-- Connect to a real MCP client.
-- Test a multi-step task across multiple sessions.
-- Document the results accurately.
+- Connect the server to a real MCP client.
+- Test a realistic multi-step file operation workflow.
+- Verify continuation across multiple sessions if required.
+- Record only results that have actually been tested.
 
-### Priority 5: Documentation
-- Review the README for reproducible setup instructions.
-- Document architecture, tool usage, configuration, and security limitations.
+### Priority 5: Documentation and Submission
+- Finalize the README with reproducible setup instructions.
+- Document both stdio and Streamable HTTP transports.
+- Document configuration, authentication, tools, and security limitations.
+- Check the remaining deliverables against the latest course rubric.
 
 ## Working Rule
 Complete one task at a time. Test each change before proceeding, and commit verified changes to Git.
 
 ## Status
 In progress
+
+## Last Updated
+2026-10-15

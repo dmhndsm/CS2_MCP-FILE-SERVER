@@ -1,40 +1,56 @@
 # MCP File Server
 
-A Model Context Protocol (MCP) file server that provides controlled file operations inside a sandboxed workspace.
+A custom Model Context Protocol (MCP) file server that provides controlled file operations inside a sandboxed workspace.
 
-This project allows an MCP-compatible client to interact with files through dedicated MCP tools instead of giving the client unrestricted access to the computer's filesystem.
+The server supports local MCP connections through **stdio** and an HTTP endpoint through **Streamable HTTP**. It provides dedicated tools for file operations while restricting requested paths to the configured workspace.
 
-## Project Purpose
+## Project Overview
 
-The purpose of this project is to build and demonstrate a custom MCP file-server connector with a sandboxed workspace and controlled file operations.
+This project is developed as part of the CS3A / CS3B Elective MCP project requirements.
 
-The server is built with Node.js, TypeScript, the MCP TypeScript SDK, and Zod for input validation.
+**Technology stack:**
+- Node.js 20 or later
+- TypeScript
+- Model Context Protocol (MCP)
+- `@modelcontextprotocol/server`
+- Zod
+- HTTP and Streamable HTTP transport
 
-## Current MCP Tools
+## Features
 
-The server currently provides the following 13 tools:
+- Sandboxed workspace for file operations
+- Workspace path validation and symbolic-link checks
+- 13 MCP tools
+- Stdio transport for local MCP clients
+- Streamable HTTP transport at `/mcp`
+- Bearer-token authentication for HTTP requests
+- 1 MB HTTP request-body limit
+- TypeScript type checking
+- Project-state and handoff documentation
+
+## Available MCP Tools
 
 | Tool | Description |
 |---|---|
 | `workspace_info` | Returns information about the configured workspace. |
-| `list` | Lists files and directories in the workspace. |
-| `read` | Reads the contents of a file in the workspace. |
-| `write` | Creates a new file or overwrites an existing file in the workspace. |
-| `append` | Adds content to an existing file in the workspace. |
-| `str_replace` | Replaces specific text inside a file. |
-| `delete` | Deletes a file inside the workspace. |
-| `search` | Searches workspace files for specific text. |
-| `move` | Moves or renames a file inside the workspace. |
-| `mkdir` | Creates a directory inside the workspace. |
+| `list` | Lists files and directories. |
+| `read` | Reads a file. |
+| `write` | Creates or overwrites a file. |
+| `append` | Appends content to a file. |
+| `str_replace` | Replaces specified text in a file. |
+| `delete` | Deletes a file. |
+| `search` | Searches workspace files for text. |
+| `move` | Moves or renames a file. |
+| `mkdir` | Creates a directory. |
 | `file_info` | Returns information about a file or directory. |
-| `copy` | Copies a file inside the workspace. |
-| `tree` | Displays the folder structure of the workspace. |
+| `copy` | Copies a file. |
+| `tree` | Displays the workspace directory structure. |
 
-All file paths are resolved against the configured workspace root.
+All file operations are intended to remain inside the configured workspace. Access outside that workspace should be rejected by the path-security checks.
 
 ## Requirements
 
-Before running the server, make sure the following are installed:
+Install the following before running the project:
 
 - Node.js 20 or later
 - npm
@@ -50,43 +66,92 @@ Enter the project directory:
 
     cd CS2_MCP-FILE-SERVER
 
-Install the project dependencies:
+Install dependencies:
 
     npm install
 
 ## Running the Server
 
-Start the MCP file server with:
+### Stdio transport
+
+Start the local MCP server:
 
     npm run dev
 
-The server runs the TypeScript source through `tsx`.
+This runs the TypeScript server through `tsx` and uses stdio for communication with a compatible MCP client.
 
-The current development configuration uses the MCP stdio transport for local MCP client connections.
+### Streamable HTTP transport
 
-HTTPS deployment and Streamable HTTP transport are planned for the deployment phase of the project.
+The HTTP server requires an environment variable named `MCP_AUTH_TOKEN`. The token must contain at least 32 characters.
+
+In PowerShell, set a token for local testing:
+
+    $env:MCP_AUTH_TOKEN = "REPLACE-WITH-A-STRONG-RANDOM-SECRET-AT-LEAST-32-CHARACTERS"
+
+Start the HTTP server:
+
+    npm run dev:http
+
+By default, the server listens at:
+
+    http://127.0.0.1:3000/mcp
+
+The default host is `127.0.0.1` and the default port is `3000`. The `HOST` and `PORT` environment variables can override these values.
+
+HTTP requests must include the bearer token:
+
+    Authorization: Bearer YOUR_MCP_AUTH_TOKEN
+
+For example, a request must supply the same secret used to set `MCP_AUTH_TOKEN`. Requests without the correct token receive `401 Unauthorized`.
+
+**Security:** The example token above is a placeholder. Generate a strong, random secret for actual use. Do not commit real tokens to Git. The default HTTP binding is for local testing; public deployment requires an appropriately secured HTTPS endpoint and additional deployment configuration.
+
+## Configuration
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `MCP_AUTH_TOKEN` | Required bearer token for HTTP transport; must be at least 32 characters | No default |
+| `HOST` | HTTP listening interface | `127.0.0.1` |
+| `PORT` | HTTP listening port | `3000` |
+| `WORKSPACE_ROOT` | Optional workspace directory override | Defined by the server's path-resolution logic |
+
+The exact workspace path depends on the server configuration. Use a dedicated workspace directory and verify its resolved location before performing file operations.
+
+## Testing and Type Checking
+
+Run the TypeScript check:
+
+    npx tsc --noEmit
+
+A successful check produces no TypeScript errors.
+
+The project has been tested during development using MCP Inspector and direct HTTP requests. Reported tests include tool discovery, workspace information, file operations, path-traversal rejection for several tools, HTTP startup, authentication rejection, and successful MCP initialization and tool listing.
+
+The HTTP request-body limit is 1 MB. Verify that oversized requests return `413 Payload Too Large` before relying on this behavior in deployment.
+
+These development tests do not establish that every tool, attack scenario, or production deployment has been fully tested.
+
+## Security Considerations
+
+- File operations use workspace path validation.
+- Paths that attempt to escape the workspace are intended to be rejected.
+- Symbolic-link checks are implemented, but they do not guarantee protection against every possible filesystem race condition.
+- HTTP access requires bearer-token authentication.
+- HTTP request bodies are limited to 1 MB.
+- Use HTTPS for remote connections.
+- Do not expose the local development server directly to the public internet without appropriate security and deployment configuration.
+- Use a dedicated workspace and avoid storing sensitive files inside it.
+- Review destructive operations such as `delete` before production use.
 
 ## Project Structure
 
     mcp-file-server/
     ├── src/
     │   ├── server.ts
+    │   ├── httpServer.ts
     │   ├── tools/
-    │   │   ├── append.ts
-    │   │   ├── copy.ts
-    │   │   ├── delete.ts
-    │   │   ├── file_info.ts
-    │   │   ├── list.ts
-    │   │   ├── mkdir.ts
-    │   │   ├── move.ts
-    │   │   ├── read.ts
-    │   │   ├── search.ts
-    │   │   ├── str_replace.ts
-    │   │   ├── tree.ts
-    │   │   └── write.ts
     │   └── utils/
     │       └── pathSecurity.ts
-    ├── dist/
     ├── workspace/
     ├── manifest.json
     ├── package.json
@@ -94,265 +159,49 @@ HTTPS deployment and Streamable HTTP transport are planned for the deployment ph
     ├── tsconfig.json
     └── README.md
 
-### Source Code
+The actual directory contents may include additional files, including handoff documentation and generated build output.
 
-- `src/server.ts` — Initializes the MCP server and registers the available tools.
-- `src/tools/` — Contains the implementations of the MCP file-operation tools.
-- `src/utils/pathSecurity.ts` — Handles workspace path validation and prevents paths from escaping the sandboxed workspace.
-- `dist/` — Contains compiled JavaScript files.
-- `workspace/` — The sandboxed directory where file operations are performed.
-- `manifest.json` — Contains the MCP package configuration.
-- `package.json` — Defines the project dependencies and npm scripts.
+## Handoff Documentation
 
-## Sandboxed Workspace
+The project uses the following files to record its state and decisions:
 
-The server is designed to restrict file operations to the configured workspace directory.
+- `workspace/PROJECT_STATE.md`
+- `workspace/PLAN_LOG.md`
+- `workspace/CHECKPOINTS.md`
+- `workspace/DECISIONS.md`
 
-File paths are resolved against the workspace root before file operations are performed. Paths that attempt to escape the workspace are rejected.
-
-This helps prevent path traversal attempts such as:
-
-    ../../outside-file.txt
-
-from accessing files outside the permitted workspace.
-
-The `workspace/` directory is used as the controlled area for file operations provided by the MCP server.
-
-Formal security and path-traversal testing will be completed as part of the security phase of the project.
-
-## File Operations
-
-### List
-
-The `list` tool displays files and directories available in the workspace.
-
-Example:
-
-    list
-
-### Read
-
-The `read` tool reads the contents of a file inside the workspace.
-
-Example:
-
-    read("hello.txt")
-
-### Write
-
-The `write` tool creates a new file or replaces the contents of an existing file.
-
-Example:
-
-    write("example.txt", "Hello from MCP")
-
-### Append
-
-The `append` tool adds content to an existing file without replacing its current contents.
-
-Example:
-
-    append("example.txt", "\nAdditional content")
-
-### String Replace
-
-The `str_replace` tool replaces a specific piece of text inside a file.
-
-Example:
-
-    str_replace("example.txt", "old text", "new text")
-
-### Delete
-
-The `delete` tool removes a file from the workspace.
-
-Example:
-
-    delete("example.txt")
-
-### Search
-
-The `search` tool searches workspace files for specific text.
-
-Example:
-
-    search("MCP")
-
-### Move
-
-The `move` tool moves or renames a file inside the workspace.
-
-Example:
-
-    move("old-name.txt", "new-name.txt")
-
-### Make Directory
-
-The `mkdir` tool creates a directory inside the workspace.
-
-Example:
-
-    mkdir("test-folder")
-
-### File Information
-
-The `file_info` tool provides information about a file or directory, including its name, size, type, and modification time.
-
-Example:
-
-    file_info("example.txt")
-
-### Copy
-
-The `copy` tool creates a copy of a file inside the workspace.
-
-Example:
-
-    copy("example.txt", "example-copy.txt")
-
-### Tree
-
-The `tree` tool displays the folder structure of the workspace.
-
-Example:
-
-    tree
-
-### Workspace Information
-
-The `workspace_info` tool provides information about the configured workspace.
-
-## Security
-
-The server uses a workspace sandbox to restrict file operations.
-
-The path-security utility validates requested paths before they are used for file operations. This is intended to prevent path traversal and unauthorized access to files outside the configured workspace.
-
-The server should be used with a controlled workspace and should not be treated as unrestricted access to the host filesystem.
-
-Additional security testing will be performed before public deployment, including path-traversal testing and checks that the sandbox cannot be bypassed.
-
-Destructive operations such as `delete` will also be reviewed for appropriate safeguards or logging during the security phase.
-
-## Dependencies
-
-The project uses the following main dependencies:
-
-- `@modelcontextprotocol/server` — MCP server functionality.
-- `zod` — Schema validation for tool inputs.
-- `tsx` — Runs the TypeScript server directly during development.
-- `typescript` — TypeScript development tooling.
-- `@types/node` — Node.js type definitions.
-
-## Configuration
-
-The MCP server currently uses a configured workspace root for file operations.
-
-The current development configuration contains a machine-specific workspace path. This is acceptable for the current local development setup but should be changed to a portable configuration before deployment.
-
-For deployment or distribution, the workspace path should be configured through an appropriate environment variable or configuration method rather than relying on a user-specific absolute path.
-
-## MCP Package
-
-The project contains an MCP package manifest used for packaging the server as an MCP bundle.
-
-The generated `.mcpb` package is intentionally excluded from Git through `.gitignore` while development is ongoing.
-
-The package can be generated or distributed separately when the server configuration and implementation are finalized.
-
-## Testing Status
-
-The MCP server and its tools have been tested during development using MCP Inspector.
-
-The following tools have been tested during development:
-
-- `workspace_info`
-- `list`
-- `read`
-- `write`
-- `append`
-- `str_replace`
-- `delete`
-- `search`
-- `move`
-- `mkdir`
-- `file_info`
-- `copy`
-- `tree`
-
-Temporary test files were removed after testing so that the workspace can remain clean.
-
-Testing with a real MCP client and the final deployed server will be completed during the deployment and demonstration phase.
-
-## GitHub Repository
-
-The project is maintained in a GitHub repository:
-
-    https://github.com/dmhndsm/CS2_MCP-FILE-SERVER.git
-
-The repository uses Git for version control and contains the project source code, configuration files, documentation, and project history.
-
-The repository is currently private during development.
+These files should be kept consistent with the current implementation and project progress.
 
 ## Development Status
 
-The project is currently under development.
+### Implemented
 
-### Completed
-
-- Working MCP server
-- Sandboxed workspace
-- Workspace path validation
-- 13 MCP tools
-- File operation tools
-- Search functionality
-- MCP Inspector testing
-- Git version control
-- GitHub repository
-- Initial project documentation
-- Clean workspace with `.gitkeep`
-
-### Remaining
-
-- Formal path-traversal and security testing
-- Portable workspace configuration
+- MCP server with 13 tools
+- Workspace sandbox and path validation
+- Stdio transport
 - Streamable HTTP transport
-- HTTPS deployment through a tunnel
-- Process manager configuration
-- Handoff protocol
-- `PROJECT_STATE`
-- `PLAN_LOG`
-- `CHECKPOINTS`
-- `DECISIONS`
-- Real MCP client connection
-- Multi-step task across 2 or more sessions
-- Final security review
-- Short technical report
-- Tool-call transcript
-- Final README review
-- 5-minute live demonstration
+- HTTP bearer-token authentication
+- HTTP request-body size limit
+- Git and GitHub version control
+- Initial project documentation
 
-## Project Goals
+### Remaining verification and deployment work
 
-The completed project is intended to provide:
+- Confirm the oversized-request test returns HTTP 413
+- Complete the final security review
+- Review workspace configuration for portability
+- Configure and verify HTTPS deployment if required
+- Configure process management and restart behavior if required
+- Test a realistic multi-step workflow using a real MCP client
+- Complete any additional deliverables still required by the latest course rubric
 
-- A working custom MCP file server.
-- A sandboxed workspace.
-- At least eight MCP tools.
-- Controlled file operations.
-- Path traversal protection.
-- Handoff and project-state files for multi-agent work.
-- Search or git-related functionality.
-- HTTPS deployment through a tunnel.
-- Process management for persistent operation.
-- Testing with a real MCP client.
-- A documented multi-step task involving multiple agent sessions.
+## GitHub Repository
 
-## Academic Project
+Repository:
 
-This project is developed as part of the CS3A / CS3B Elective MCP project requirements.
+https://github.com/dmhndsm/CS2_MCP-FILE-SERVER
 
-The project follows the Week 6 MCP project requirements, including the development of a custom MCP file server, sandboxing, tool implementation, deployment, handoff protocol, testing, documentation, and demonstration.
+The repository is currently private during development.
 
 ## License
 
