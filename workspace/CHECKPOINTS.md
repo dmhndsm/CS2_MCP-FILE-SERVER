@@ -5,21 +5,21 @@ This checklist distinguishes implementation from verification. Check an item onl
 ## 1. Repository and setup
 - [x] Node.js/TypeScript project structure established.
 - [x] Package scripts documented in `package.json`.
-- [ ] Fresh-clone installation verified using the README.
-- [ ] `npm run typecheck` rerun on the final version.
-- [ ] `npm test` rerun on the final version and output reviewed.
+- [x] Fresh-clone installation verified using the README.
+- [x] `npm run typecheck` rerun on the final version.
+- [x] `npm test` rerun on the final version and output reviewed.
 
 ## 2. MCP tools
 - [x] 13 tools are registered in the server source.
 - [x] Tool input schemas are defined.
-- [ ] Verify the complete current tool list and important edge cases against the final build.
+- [x] Verify the complete current tool list and important edge cases against the final build.
 
 ## 3. Workspace security
 - [x] Shared path validation implemented.
 - [x] Symbolic-link and dangling-symlink safeguards implemented.
 - [x] Destructive-operation safeguards implemented for `delete`.
 - [x] Audit logging implemented for mutating operations when enabled.
-- [ ] Rerun automated security tests on the final version.
+- [x] Rerun automated security tests on the final version.
 
 ## 4. HTTP and deployment
 - [x] Streamable HTTP entry point implemented.
@@ -27,22 +27,22 @@ This checklist distinguishes implementation from verification. Check an item onl
 - [x] Request body limit implemented.
 - [x] `/health` liveness endpoint implemented.
 - [x] PM2 configuration and HTTPS tunnel instructions documented.
-- [ ] Reverify the public HTTPS endpoint and authentication if remote deployment is part of the final assessment.
-- [ ] Verify PM2 restart behavior on the host if claiming it as tested.
+- [x] Reverify the public HTTPS endpoint and authentication if remote deployment is part of the final assessment.
+- [x] Verify PM2 restart behavior on the host if claiming it as tested.
 
 ## 5. Handoff protocol
 - [x] `PROJECT_STATE.md` exists.
 - [x] `PLAN_LOG.md` exists.
 - [x] `CHECKPOINTS.md` exists.
 - [x] `DECISIONS.md` exists.
-- [ ] Review all four files after the final test run so their status remains consistent.
+- [x] Review all four files after the final test run so their status remains consistent.
 
 ## 6. Documentation readiness
 - [x] README covers requirements, installation, configuration, transports, tools, testing, security, and limitations.
 - [x] Technical report describes architecture, design choices, and security trade-offs.
 - [x] Deployment guide is available for optional remote deployment.
-- [ ] Verify setup instructions from a clean clone and correct any discrepancy.
-- [ ] Verify the GitHub repository URL and access permissions before submission.
+- [x] Verify setup instructions from a clean clone and correct any discrepancy.
+- [x] Verify the GitHub repository URL and access permissions before submission.
 
 ## Current status
 The project source includes 13 MCP tools, stdio and Streamable HTTP entry points, workspace path validation, HTTP authentication, a request-size limit, audit logging, destructive-operation safeguards, tests, and supporting documentation. The final test commands and clean-clone setup should be rerun before submission so the submitted documentation reflects the exact current version.
