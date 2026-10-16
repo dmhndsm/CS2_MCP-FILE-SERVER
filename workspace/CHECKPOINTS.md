@@ -1,104 +1,53 @@
-# Checkpoints
+# Project Checkpoints
 
-## Project: MCP File Server
+This checklist distinguishes implementation from verification. Check an item only when its stated condition has been met on the version being submitted.
 
-### Checkpoint 1: Server Setup
-- [x] Node.js and TypeScript project configured.
-- [x] MCP server runs using stdio transport.
-- [x] Server tools registered and accessible through MCP Inspector.
-- [x] Streamable HTTP server implemented.
+## 1. Repository and setup
+- [x] Node.js/TypeScript project structure established.
+- [x] Package scripts documented in `package.json`.
+- [ ] Fresh-clone installation verified using the README.
+- [ ] `npm run typecheck` rerun on the final version.
+- [ ] `npm test` rerun on the final version and output reviewed.
 
-### Checkpoint 2: File Management Tools
-- [x] `workspace_info`
-- [x] `list`
-- [x] `read`
-- [x] `write`
-- [x] `append`
-- [x] `str_replace`
-- [x] `delete`
-- [x] `search`
-- [x] `move`
-- [x] `mkdir`
-- [x] `file_info`
-- [x] `copy`
-- [x] `tree`
+## 2. MCP tools
+- [x] 13 tools are registered in the server source.
+- [x] Tool input schemas are defined.
+- [ ] Verify the complete current tool list and important edge cases against the final build.
 
-### Checkpoint 3: Workspace Security
-- [x] Tested `read` with an outside-workspace path.
-- [x] Tested `write` with an outside-workspace path.
-- [x] Tested `delete` with an outside-workspace path.
-- [x] Tested `copy` with an outside-workspace source path.
-- [x] Tested `move` with an outside-workspace source path.
-- [x] Tested `append` with an outside-workspace path.
-- [x] Tested `str_replace` with an outside-workspace path.
-- [x] Tested `mkdir` with an outside-workspace path.
-- [x] Checked `search` behavior during development; results were inconclusive.
-- [x] Checked `tree` and `list` output.
-- [x] Tested `file_info` with an outside-workspace path.
-- [x] Tested symbolic-link escape rejection during development.
-- [x] Added HTTP bearer-token authentication.
-- [x] Added a 1 MB HTTP request-body limit.
-- [ ] Confirm the oversized-request response returns HTTP 413.
-- [ ] Complete a final security regression review.
-- [ ] Add automated security tests.
+## 3. Workspace security
+- [x] Shared path validation implemented.
+- [x] Symbolic-link and dangling-symlink safeguards implemented.
+- [x] Destructive-operation safeguards implemented for `delete`.
+- [x] Audit logging implemented for mutating operations when enabled.
+- [ ] Rerun automated security tests on the final version.
 
-### Checkpoint 4: Portable Configuration
-- [x] Added support for the `WORKSPACE_ROOT` environment variable.
-- [x] Verified that `workspace_info` reports the expected workspace.
-- [x] Verified that `tree` works after the configuration change.
-- [ ] Verify the workspace configuration from a clean environment.
+## 4. HTTP and deployment
+- [x] Streamable HTTP entry point implemented.
+- [x] Bearer-token authentication implemented.
+- [x] Request body limit implemented.
+- [x] `/health` liveness endpoint implemented.
+- [x] PM2 configuration and HTTPS tunnel instructions documented.
+- [ ] Reverify the public HTTPS endpoint and authentication if remote deployment is part of the final assessment.
+- [ ] Verify PM2 restart behavior on the host if claiming it as tested.
 
-### Checkpoint 5: Handoff Protocol
-- [x] Created `PROJECT_STATE.md`.
-- [x] Created `PLAN_LOG.md`.
-- [x] Created `CHECKPOINTS.md`.
-- [x] Created `DECISIONS.md`.
-- [x] Confirmed all four Markdown files are tracked by Git.
-- [ ] Review all handoff files for accuracy and consistency.
+## 5. Handoff protocol
+- [x] `PROJECT_STATE.md` exists.
+- [x] `PLAN_LOG.md` exists.
+- [x] `CHECKPOINTS.md` exists.
+- [x] `DECISIONS.md` exists.
+- [ ] Review all four files after the final test run so their status remains consistent.
 
-### Checkpoint 6: HTTP, Deployment, and Client Integration
-- [x] Implemented Streamable HTTP transport.
-- [x] Tested HTTP server startup.
-- [x] Tested rejection of missing bearer tokens.
-- [x] Tested rejection of incorrect bearer tokens.
-- [x] Tested a valid MCP initialization request.
-- [x] Tested an MCP `tools/list` request.
-- [ ] Confirm the oversized-request response returns HTTP 413.
-- [ ] Configure an HTTPS tunnel or suitable deployment environment if required.
-- [ ] Configure process management and restart behavior if required.
-- [ ] Connect through a real MCP client.
-- [ ] Test a realistic multi-step task across multiple sessions.
+## 6. Documentation readiness
+- [x] README covers requirements, installation, configuration, transports, tools, testing, security, and limitations.
+- [x] Technical report describes architecture, design choices, and security trade-offs.
+- [x] Deployment guide is available for optional remote deployment.
+- [ ] Verify setup instructions from a clean clone and correct any discrepancy.
+- [ ] Verify the GitHub repository URL and access permissions before submission.
 
-### Checkpoint 7: Documentation
-- [x] Created the initial README.
-- [ ] Finalize the updated README.
-- [ ] Verify the documented commands and configuration against the source code.
-- [ ] Document security controls and limitations accurately.
-- [ ] Verify setup from a clean environment.
+## Current status
+The project source includes 13 MCP tools, stdio and Streamable HTTP entry points, workspace path validation, HTTP authentication, a request-size limit, audit logging, destructive-operation safeguards, tests, and supporting documentation. The final test commands and clean-clone setup should be rerun before submission so the submitted documentation reflects the exact current version.
 
-### Checkpoint 8: Git and Submission
-- [x] Maintained the project in Git.
-- [x] Pushed the HTTP authentication and request-size-limit changes to GitHub.
-- [ ] Commit and push the current documentation updates.
-- [ ] Verify all remaining deliverables against the latest course requirements.
+The professor clarified that a live demo is not required as a submission deliverable. Demo-related materials, if retained, are optional support documents and are not treated as completed evidence unless filled with actual results.
 
-## Current Status
-
-The stdio MCP server, 13 tools, workspace path validation, Streamable HTTP transport, bearer-token authentication, and request-body limit are implemented. Basic HTTP requests and authentication have been tested. Documentation is being updated.
-
-The exact HTTP 413 response, final security review, deployment requirements, and real-client multi-session workflow still need verification.
-
-## Last Updated
-2026-10-15
-
-## Audit follow-up checkpoints
-- [x] `append` uses shared path validation (regression-tested)
-- [x] Dangling-symlink write blocked (tested)
-- [x] HTTP 413 confirmed by automated test
-- [x] Automated security + HTTP tests: 20/20 passing (`npm test`)
-- [x] PM2 config, audit log, gated delete, report/demo/transcript docs written
-- [ ] PM2 running + restart demonstrated on host
-- [ ] HTTPS tunnel verified from outside
-- [ ] Real MCP client connected through tunnel
-- [ ] Two-session demo run and TRANSCRIPT filled from real output
-- [ ] Clean-clone install test per README
+## Last updated
+2026-10-17

@@ -1,109 +1,45 @@
 # Plan Log
 
-## Project: MCP File Server
+## Project
+MCP File Server
 
-## Completed Work
+## Completed implementation work
 
-### 1. Initial Server Setup
-- Set up the Node.js and TypeScript project.
-- Configured the MCP server to use stdio transport.
-- Registered the server tools.
+### Server and tools
+- Set up a Node.js and TypeScript MCP server.
+- Implemented stdio and Streamable HTTP entry points.
+- Registered 13 tools: `workspace_info`, `list`, `read`, `write`, `append`, `str_replace`, `delete`, `search`, `move`, `mkdir`, `file_info`, `copy`, and `tree`.
+- Added Zod input validation for tool arguments.
 
-### 2. File Management Tools
-Implemented 13 tools:
-- `workspace_info`
-- `list`
-- `read`
-- `write`
-- `append`
-- `str_replace`
-- `delete`
-- `search`
-- `move`
-- `mkdir`
-- `file_info`
-- `copy`
-- `tree`
+### Workspace security
+- Added shared path resolution and workspace containment checks.
+- Added protections for symbolic-link and dangling-symlink escape cases.
+- Added safeguards to prevent `delete` from deleting the four handoff files.
+- Added audit logging for mutating operations when enabled.
 
-### 3. Workspace Security
-- Implemented workspace-based path resolution.
-- Added path validation intended to prevent access outside the workspace.
-- Tested multiple outside-workspace paths using MCP Inspector.
-- Confirmed that the tested operations rejected the attempted paths.
-- Added support for the `WORKSPACE_ROOT` environment variable.
-- Attempted symbolic-link escape checks during development.
+### HTTP transport
+- Added bearer-token authentication through `MCP_AUTH_TOKEN`.
+- Added a request-body size limit and `/health` liveness endpoint.
+- Added PM2 configuration and deployment instructions for an HTTPS tunnel.
 
-### 4. HTTP Transport and Authentication
-- Added Streamable HTTP transport in `src/httpServer.ts`.
-- Exported `createServer()` for use by the HTTP transport.
-- Configured the default endpoint as `http://127.0.0.1:3000/mcp`.
-- Added required bearer-token authentication through `MCP_AUTH_TOKEN`.
-- Added a minimum token length of 32 characters.
-- Added a 1 MB request-body limit.
-- Tested missing, incorrect, and correct bearer tokens.
-- Tested server startup and MCP tool discovery over HTTP.
-- Confirmed TypeScript compilation passed during development.
-- The exact HTTP 413 response for oversized requests still requires confirmation.
+### Documentation
+- Added README setup, configuration, tool reference, testing instructions, security notes, and limitations.
+- Added `docs/TECHNICAL_REPORT.md` and `docs/DEPLOYMENT.md`.
+- Maintained the four handoff documents: `PROJECT_STATE.md`, `PLAN_LOG.md`, `CHECKPOINTS.md`, and `DECISIONS.md`.
 
-### 5. Documentation and Version Control
-- Created the initial README.
-- Created the four handoff documentation files.
-- Added the workspace placeholder file `.gitkeep`.
-- Maintained the project in Git and GitHub.
-- Committed and pushed the HTTP authentication and request-size-limit changes.
+## Verification notes
+A previous project update recorded 20 passing automated tests. This is historical project status, not a substitute for rerunning the tests on the exact submitted version. Before submission, run `npm test` and `npm run typecheck`, review the output, and update the project documentation if results differ.
 
-## Current Work
-- Updating the README to reflect the current implementation.
-- Reviewing the accuracy of the handoff documentation.
-- Preparing for final security verification and client integration.
+Do not mark a deployment, PM2 restart, clean-clone setup, or real-client check as complete unless it has actually been performed and the result is known.
 
-## Planned Work
+## Next steps for documentation readiness
+1. Run the README instructions from a clean clone.
+2. Run `npm run typecheck` and `npm test` on the final version.
+3. Update `PROJECT_STATE.md` and `CHECKPOINTS.md` with the verified results.
+4. Confirm the GitHub repository URL and access permissions.
 
-### Priority 1: Handoff Documentation
-- Verify `PROJECT_STATE.md`.
-- Review and update `PLAN_LOG.md`.
-- Review `CHECKPOINTS.md`.
-- Review `DECISIONS.md`.
-- Ensure the handoff files reflect verified project status.
+## Academic submission note
+The professor clarified that a live demo is not required as a submission deliverable. Focus on the working repository and reproducible documentation. Demo-related files are optional reference materials and should not be described as completed evidence unless populated from actual test results.
 
-### Priority 2: Essential Security Verification
-- Confirm the oversized-request response is HTTP 413.
-- Complete any necessary path-traversal regression checks.
-- Review symbolic-link handling and remaining security limitations.
-- Avoid claiming comprehensive security until appropriate tests are complete.
-
-### Priority 3: Deployment
-- Review workspace configuration for portability.
-- Configure HTTPS access through a tunnel or suitable deployment environment if required.
-- Configure process management and restart behavior if required.
-- Use a strong randomly generated authentication token.
-- Verify the deployed endpoint before relying on it.
-
-### Priority 4: Client Integration
-- Connect the server to a real MCP client.
-- Test a realistic multi-step file operation workflow.
-- Verify continuation across multiple sessions if required.
-- Record only results that have actually been tested.
-
-### Priority 5: Documentation and Submission
-- Finalize the README with reproducible setup instructions.
-- Document both stdio and Streamable HTTP transports.
-- Document configuration, authentication, tools, and security limitations.
-- Check the remaining deliverables against the latest course rubric.
-
-## Working Rule
-Complete one task at a time. Test each change before proceeding, and commit verified changes to Git.
-
-## Status
-In progress
-
-## Last Updated
-2026-10-15
-
-## Session update (audit follow-up)
-- Fixed `append` sandbox inconsistency; hardened `resolveSafePath` (dangling symlinks, NUL bytes).
-- Added audit log, gated `delete`, tighter Zod limits, optional `path` for `list`.
-- HTTP: constant-time token check, `/health`, early 413, pathname matching.
-- Added `ecosystem.config.cjs`, build/start/test scripts, 20 automated tests (all passing).
-- Added docs/: DEPLOYMENT, DEMO_SCRIPT, TRANSCRIPT_TEMPLATE, TECHNICAL_REPORT.
-- NEXT (needs the host machine): run PM2 + tunnel, connect real client, run 2-session demo, fill transcript.
+## Last updated
+2026-10-17

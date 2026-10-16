@@ -40,4 +40,3 @@ Claude Desktop / claude.ai custom connector, or Claude Code:
     claude mcp add --transport http file-server https://<random>.trycloudflare.com/mcp --header "Authorization: Bearer $MCP_AUTH_TOKEN"
 
 MCP Inspector (also valid evidence): `npx @modelcontextprotocol/inspector` -> Streamable HTTP -> URL above -> add the Authorization header.
-Note: if your client UI cannot send a custom bearer header, use Claude Code or Inspector for the demo.

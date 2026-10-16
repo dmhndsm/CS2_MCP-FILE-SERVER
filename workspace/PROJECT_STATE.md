@@ -1,100 +1,66 @@
 # Project State
 
-## Project Name
+## Project
 MCP File Server
 
 ## Overview
-A sandboxed file server built with Node.js, TypeScript, the Model Context Protocol (MCP), and Zod. It provides controlled file operations inside a designated workspace through stdio and Streamable HTTP transports.
+A sandboxed Model Context Protocol (MCP) file server built with Node.js, TypeScript, the MCP TypeScript server SDK, and Zod. It provides controlled file operations inside a configured workspace using stdio and Streamable HTTP transports.
 
-## Technology Stack
-- Node.js 20 or later
+## Technology stack
+- Node.js 20 or later, compatible with the project dependencies
 - TypeScript
 - `@modelcontextprotocol/server`
 - Zod
-- `tsx`
-- Node.js HTTP server
+- `tsx` for development execution
+- Node.js HTTP server for Streamable HTTP
+- PM2 configuration for process supervision
+- Cloudflare Tunnel documented as an HTTPS exposure option
 
-## Implemented Tools
+## Implemented tools
 1. `workspace_info` — reports workspace information.
-2. `list` — lists workspace files and directories.
+2. `list` — lists files and directories.
 3. `read` — reads file contents.
 4. `write` — creates or overwrites files.
-5. `append` — appends content to files.
-6. `str_replace` — replaces text in files.
-7. `delete` — deletes files.
-8. `search` — searches workspace files.
-9. `move` — moves or renames files.
+5. `append` — appends content.
+6. `str_replace` — replaces specified text.
+7. `delete` — deletes eligible files subject to safeguards.
+8. `search` — searches workspace files for text.
+9. `move` — moves or renames supported items.
 10. `mkdir` — creates directories.
-11. `file_info` — retrieves file information.
-12. `copy` — copies files.
+11. `file_info` — retrieves file/directory information.
+12. `copy` — copies supported items.
 13. `tree` — displays the workspace directory tree.
 
-## Transport Status
-
+## Transports
 ### Stdio
-- Implemented in `src/server.ts`.
-- Started with `npm run dev`.
-- Intended for local MCP client connections.
+Implemented in `src/server.ts`; development command: `npm run dev`.
 
 ### Streamable HTTP
-- Implemented in `src/httpServer.ts`.
-- Started with `npm run dev:http`.
-- Default endpoint: `http://127.0.0.1:3000/mcp`.
-- Requires the `MCP_AUTH_TOKEN` environment variable.
-- Rejects missing or incorrect bearer tokens.
-- Enforces a 1 MB request-body limit.
-- Defaults to listening on `127.0.0.1`, port `3000`.
+Implemented in `src/httpServer.ts`; development command: `npm run dev:http`. Default endpoint: `http://127.0.0.1:3000/mcp`. Requires `MCP_AUTH_TOKEN` with at least 32 characters. `HOST` and `PORT` can override the default bind address and port. `/health` is provided for liveness checks.
 
-## Configuration
-- `MCP_AUTH_TOKEN` — required for HTTP transport and must contain at least 32 characters.
-- `HOST` — optional HTTP listening host; defaults to `127.0.0.1`.
-- `PORT` — optional HTTP listening port; defaults to `3000`.
-- `WORKSPACE_ROOT` — optional workspace directory override.
+## Security controls implemented in code
+- Shared workspace path validation, including checks for symbolic-link escapes and dangling symlinks.
+- Zod input validation and bounded input lengths.
+- HTTP bearer-token authentication.
+- HTTP request-body size limit.
+- Audit logging for mutating operations when enabled.
+- `delete` safeguards for the four handoff files.
 
-If `WORKSPACE_ROOT` is not set, the server uses its configured default workspace resolution.
+## Verification status
+The project includes automated security and HTTP tests in `test/`, and `npm test` builds the project before running them. A previous project update recorded 20 passing tests. Re-run `npm test` and `npm run typecheck` on the exact version being submitted; current command output is the authoritative result.
 
-## Security Status
-- Workspace path resolution and validation are implemented.
-- Manual path-traversal checks were performed using MCP Inspector.
-- Several tested outside-workspace paths were rejected.
-- Symbolic-link escape checks were attempted during development.
-- Formal automated security tests remain pending.
-- HTTP bearer-token authentication has been tested for missing, incorrect, and correct tokens.
-- The request-size limit has been implemented; the exact HTTP 413 response should be confirmed.
-- Public deployment and production security review remain incomplete.
+Deployment-related items such as PM2 restart behavior and the public HTTPS tunnel must be described as verified only if they have been tested on the host machine. Likewise, record real-client and multi-session checks only when they have actually been performed.
 
-## Handoff Documentation
-The following files exist and are tracked by Git:
+## Handoff documents
 - `workspace/PROJECT_STATE.md`
 - `workspace/PLAN_LOG.md`
 - `workspace/CHECKPOINTS.md`
 - `workspace/DECISIONS.md`
 
-Their contents should continue to reflect the current implementation and verified progress.
+These files should be updated together when implementation or verification status changes.
 
-## Testing Status
-- MCP tools were tested during development using MCP Inspector.
-- TypeScript checks using `npx tsc --noEmit` have passed during recent changes.
-- HTTP server startup has been tested.
-- Missing and incorrect bearer tokens were rejected.
-- A valid initialization request succeeded.
-- An MCP `tools/list` request succeeded.
-- An oversized request was tested, but the exact HTTP 413 status still needs confirmation.
+## Submission documentation focus
+The professor clarified that a live demo is not required for the submission. The documentation focus is a working repository, a README that a classmate can follow, and supporting project documentation. Optional deployment/testing guides may remain in the repository but should not be represented as proof that a test was run.
 
-Testing with a real MCP client across multiple sessions remains to be verified.
-
-## Remaining Work
-- Confirm the HTTP 413 response for oversized requests.
-- Review and finalize the README.
-- Review the other handoff files for accuracy.
-- Complete the required security review and any essential regression checks.
-- Verify portable workspace configuration.
-- Configure HTTPS deployment and process management if required by the final rubric.
-- Test a realistic multi-step workflow with a real MCP client across multiple sessions.
-- Confirm all required academic deliverables against the latest instructions.
-
-## Last Updated
-2026-10-15
-
-## Update (audit follow-up)
-Code-level gaps from the audit are closed: `append` sandbox fix, dangling-symlink fix, audit log, gated delete, stricter schemas, `/health`, PM2 config, build/test scripts, 20 passing tests. Still to do on the host: run PM2 + tunnel, real-client connection, two-session demo + transcript, clean-clone test. See docs/DEPLOYMENT.md and docs/DEMO_SCRIPT.md.
+## Last updated
+2026-10-17
