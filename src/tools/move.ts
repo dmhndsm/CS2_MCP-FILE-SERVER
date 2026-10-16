@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import { audit } from "../utils/auditLog.js";
 import { resolveSafePath } from "../utils/pathSecurity.js";
 
 export async function moveFile(
@@ -13,4 +14,5 @@ export async function moveFile(
   );
 
   await fs.rename(safeSourcePath, safeDestinationPath);
+  audit("move", { from: sourcePath, to: destinationPath });
 }

@@ -99,3 +99,11 @@ In progress
 
 ## Last Updated
 2026-10-15
+
+## Session update (audit follow-up)
+- Fixed `append` sandbox inconsistency; hardened `resolveSafePath` (dangling symlinks, NUL bytes).
+- Added audit log, gated `delete`, tighter Zod limits, optional `path` for `list`.
+- HTTP: constant-time token check, `/health`, early 413, pathname matching.
+- Added `ecosystem.config.cjs`, build/start/test scripts, 20 automated tests (all passing).
+- Added docs/: DEPLOYMENT, DEMO_SCRIPT, TRANSCRIPT_TEMPLATE, TECHNICAL_REPORT.
+- NEXT (needs the host machine): run PM2 + tunnel, connect real client, run 2-session demo, fill transcript.

@@ -106,3 +106,15 @@
 - Review and strengthen symbolic-link and path-traversal protections.
 - Choose a real MCP client for integration testing.
 - Confirm the final deployment and testing requirements against the course rubric.
+
+### Decision 13: Route every file tool through resolveSafePath
+**Decision:** `append` (and `write`) now use the shared path helper, which uses lstat + realpath. **Reason:** `append` used a lexical check only; a symlink could redirect writes outside the workspace (reproduced, then fixed). **Status:** Implemented, regression-tested.
+
+### Decision 14: Audit log and gated delete
+**Decision:** All mutating tools write JSON lines to `logs/audit.log` (outside workspace); `delete` refuses directories and the four handoff files. **Reason:** Destructive operations should be logged and gated. **Status:** Implemented, tested.
+
+### Decision 15: PM2 + Cloudflare Tunnel
+**Decision:** Run `dist/httpServer.js` under PM2 (`ecosystem.config.cjs`), bound to 127.0.0.1, exposed through a Cloudflare quick tunnel. **Reason:** Satisfies HTTPS + process-manager requirements without opening ports. **Status:** Config written; must be run and verified on the host (docs/DEPLOYMENT.md).
+
+### Decision 16: Entry-point guard for stdio
+**Decision:** `server.ts` starts stdio only when it is the process entry point. **Reason:** Importing `createServer()` from the HTTP entry (e.g., under PM2) must not open stdio. **Status:** Implemented.

@@ -117,7 +117,16 @@ For example, a request must supply the same secret used to set `MCP_AUTH_TOKEN`.
 
 The exact workspace path depends on the server configuration. Use a dedicated workspace directory and verify its resolved location before performing file operations.
 
+## Deployment (HTTPS + PM2)
+
+See `docs/DEPLOYMENT.md`. In short: `npm run build`, `pm2 start ecosystem.config.cjs --update-env`, then `cloudflared tunnel --url http://127.0.0.1:3000`. A `GET /health` endpoint (no auth) supports liveness checks. Mutating tools are recorded in `logs/audit.log` (override with `AUDIT_LOG`, disable with `AUDIT_LOG=off`). `delete` only removes files and refuses the four handoff files.
+
 ## Testing and Type Checking
+
+Run the automated suite (builds first, then 20 security and HTTP tests):
+
+    npm test
+
 
 Run the TypeScript check:
 
@@ -183,6 +192,7 @@ These files should be kept consistent with the current implementation and projec
 - HTTP bearer-token authentication
 - HTTP request-body size limit
 - Git and GitHub version control
+- Automated tests, PM2 config, audit log
 - Initial project documentation
 
 ### Remaining verification and deployment work
@@ -206,3 +216,21 @@ The repository is currently private during development.
 ## License
 
 This project is currently provided for academic and educational purposes.
+## Claude Web remote connector (OAuth)
+
+The HTTP server supports an OAuth authorization-code flow with PKCE for remote MCP clients such as Claude Web. Keep the existing bearer-token authentication enabled; OAuth access tokens are accepted separately.
+
+Before starting the HTTP server, configure these environment variables in the same PowerShell terminal:
+
+```powershell
+$env:MCP_AUTH_TOKEN = "<a-long-random-secret-at-least-32-characters>"
+$env:MCP_OAUTH_PASSWORD = "<a-separate-strong-login-password>"
+$env:PUBLIC_BASE_URL = "https://YOUR-CURRENT-TUNNEL.trycloudflare.com"
+npm run dev:http
+```
+
+`PUBLIC_BASE_URL` must be the public HTTPS origin only, with no `/mcp` suffix. Set it to the current Cloudflare Tunnel URL every time that URL changes. `MCP_OAUTH_PASSWORD` protects the browser authorization flow; use a separate strong password rather than reusing the bearer token. Do not commit these values to source control or share them in screenshots.
+
+In Claude Web, add a custom connector with URL `https://YOUR-CURRENT-TUNNEL.trycloudflare.com/mcp`, choose **Sign in now**, and leave the default **Streamable HTTP** transport selected. The server publishes OAuth protected-resource and authorization-server metadata, supports dynamic client registration, authorization code with PKCE S256, token exchange, and refresh tokens. During connection, sign in using `MCP_OAUTH_PASSWORD` and approve the requested workspace access.
+
+OAuth clients, authorization codes, sessions, and tokens are held in memory. Restarting the server invalidates them, so reconnect Claude after a restart. This implementation is intended for a single-user project/demo; before public production use, add durable storage, rate limiting, session revocation, and stronger operational monitoring. Keep the tunnel and server private to trusted use.

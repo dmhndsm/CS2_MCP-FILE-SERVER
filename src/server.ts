@@ -55,7 +55,7 @@ export function createServer() {
     {
       description: "Read the contents of a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file to read"),
+        path: z.string().min(1).max(512).describe("Relative path of the file to read"),
       },
     },
     async ({ path: filePath }) => {
@@ -90,11 +90,19 @@ export function createServer() {
   server.registerTool(
     "list",
     {
-      description: "List files inside the workspace.",
+      description:
+        "List files and directories inside the workspace (optionally a subdirectory).",
+      inputSchema: {
+        path: z
+          .string()
+          .max(512)
+          .optional()
+          .describe("Relative directory to list; defaults to the workspace root"),
+      },
     },
-    async () => {
+    async ({ path: dirPath }) => {
       try {
-        const files = await listFiles(workspaceRoot, "");
+        const files = await listFiles(workspaceRoot, dirPath ?? "");
 
         return {
           content: [
@@ -127,8 +135,8 @@ export function createServer() {
     {
       description: "Create or overwrite a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file to write"),
-        content: z.string().describe("Content to write into the file"),
+        path: z.string().min(1).max(512).describe("Relative path of the file to write"),
+        content: z.string().max(1_000_000).describe("Content to write into the file"),
       },
     },
     async ({ path: filePath, content }) => {
@@ -165,8 +173,8 @@ export function createServer() {
     {
       description: "Append content to a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file"),
-        content: z.string().describe("Content to append"),
+        path: z.string().min(1).max(512).describe("Relative path of the file"),
+        content: z.string().max(1_000_000).describe("Content to append"),
       },
     },
     async ({ path: filePath, content }) => {
@@ -204,9 +212,9 @@ export function createServer() {
       description:
         "Replace a specific piece of text in a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file"),
-        oldString: z.string().describe("Exact text to find and replace"),
-        newString: z.string().describe("Text that will replace the old text"),
+        path: z.string().min(1).max(512).describe("Relative path of the file"),
+        oldString: z.string().min(1).max(1_000_000).describe("Exact text to find and replace"),
+        newString: z.string().max(1_000_000).describe("Text that will replace the old text"),
       },
     },
     async ({ path: filePath, oldString, newString }) => {
@@ -243,7 +251,7 @@ export function createServer() {
     {
       description: "Delete a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file to delete"),
+        path: z.string().min(1).max(512).describe("Relative path of the file to delete"),
       },
     },
     async ({ path: filePath }) => {
@@ -283,6 +291,7 @@ export function createServer() {
         query: z
           .string()
           .min(1)
+          .max(500)
           .describe("Text to search for inside workspace files"),
       },
     },
@@ -361,7 +370,7 @@ export function createServer() {
     {
       description: "Create a directory inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the directory to create"),
+        path: z.string().min(1).max(512).describe("Relative path of the directory to create"),
       },
     },
     async ({ path: directoryPath }) => {
@@ -398,7 +407,7 @@ export function createServer() {
     {
       description: "Get information about a file inside the workspace.",
       inputSchema: {
-        path: z.string().describe("Relative path of the file"),
+        path: z.string().min(1).max(512).describe("Relative path of the file"),
       },
     },
     async ({ path: filePath }) => {
@@ -440,7 +449,7 @@ export function createServer() {
     {
       description: "Copy a file inside the workspace.",
       inputSchema: {
-        sourcePath: z.string().describe("Relative path of the source file"),
+        sourcePath: z.string().min(1).max(512).describe("Relative path of the source file"),
         destinationPath: z
           .string()
           .describe("Relative path of the copied file"),
@@ -511,7 +520,12 @@ export function createServer() {
   return server;
 }
 
-if (process.env.MCP_TRANSPORT !== "http") {
+// Only start stdio when this file is the process entry point, so importing
+// createServer() from httpServer.ts (e.g. under PM2) never opens stdio.
+const isEntryPoint =
+  process.argv[1] !== undefined && path.resolve(process.argv[1]) === __filename;
+
+if (isEntryPoint && process.env.MCP_TRANSPORT !== "http") {
   void serveStdio(createServer);
   console.error("Secure MCP File Server running on stdio");
 }

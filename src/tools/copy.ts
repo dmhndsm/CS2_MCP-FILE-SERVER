@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import { audit } from "../utils/auditLog.js";
 import { resolveSafePath } from "../utils/pathSecurity.js";
 
 export async function copyFile(
@@ -13,4 +14,5 @@ export async function copyFile(
   );
 
   await fs.copyFile(safeSourcePath, safeDestinationPath);
+  audit("copy", { from: sourcePath, to: destinationPath });
 }

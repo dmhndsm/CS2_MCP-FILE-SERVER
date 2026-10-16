@@ -1,11 +1,18 @@
 {
   "name": "mcp-file-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "Sandboxed MCP file server (stdio + Streamable HTTP)",
   "main": "index.js",
   "scripts": {
     "dev": "tsx src/server.ts",
-    "dev:http": "tsx src/httpServer.ts"
+    "dev:http": "tsx src/httpServer.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "start:http": "node dist/httpServer.js",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build && tsx --test test/*.test.ts",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:logs": "pm2 logs mcp-file-server"
   },
   "keywords": [],
   "author": "",

@@ -90,3 +90,15 @@ The exact HTTP 413 response, final security review, deployment requirements, and
 
 ## Last Updated
 2026-10-15
+
+## Audit follow-up checkpoints
+- [x] `append` uses shared path validation (regression-tested)
+- [x] Dangling-symlink write blocked (tested)
+- [x] HTTP 413 confirmed by automated test
+- [x] Automated security + HTTP tests: 20/20 passing (`npm test`)
+- [x] PM2 config, audit log, gated delete, report/demo/transcript docs written
+- [ ] PM2 running + restart demonstrated on host
+- [ ] HTTPS tunnel verified from outside
+- [ ] Real MCP client connected through tunnel
+- [ ] Two-session demo run and TRANSCRIPT filled from real output
+- [ ] Clean-clone install test per README

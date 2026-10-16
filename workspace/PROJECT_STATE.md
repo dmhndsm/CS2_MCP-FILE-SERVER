@@ -95,3 +95,6 @@ Testing with a real MCP client across multiple sessions remains to be verified.
 
 ## Last Updated
 2026-10-15
+
+## Update (audit follow-up)
+Code-level gaps from the audit are closed: `append` sandbox fix, dangling-symlink fix, audit log, gated delete, stricter schemas, `/health`, PM2 config, build/test scripts, 20 passing tests. Still to do on the host: run PM2 + tunnel, real-client connection, two-session demo + transcript, clean-clone test. See docs/DEPLOYMENT.md and docs/DEMO_SCRIPT.md.

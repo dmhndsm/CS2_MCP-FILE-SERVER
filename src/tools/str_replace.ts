@@ -1,4 +1,5 @@
 import * as fs from "node:fs/promises";
+import { audit } from "../utils/auditLog.js";
 import { resolveSafePath } from "../utils/pathSecurity.js";
 
 export async function strReplace(
@@ -18,4 +19,5 @@ export async function strReplace(
   const updatedContent = content.replace(oldString, newString);
 
   await fs.writeFile(safePath, updatedContent, "utf8");
+  audit("str_replace", { path: relativePath });
 }
