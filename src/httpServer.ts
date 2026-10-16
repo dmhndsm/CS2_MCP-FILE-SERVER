@@ -52,6 +52,13 @@ const refreshTokens = new Map<
 >();
 const browserSessions = new Map<string, number>();
 
+// Makes repeated browser form submissions safe without issuing multiple codes.
+// Entries are short-lived and bound to the authenticated browser session.
+const completedAuthorizations = new Map<
+  string,
+  { sessionId: string; location: string; expiresAt: number }
+>();
+
 function randomToken(bytes = 32): string {
   return randomBytes(bytes).toString("base64url");
 }
@@ -391,11 +398,25 @@ const httpServer = createHttpServer(async (req, res) => {
       const pending = pendingAuthorizations.get(pendingId);
 
       if (!pending) {
+        // A repeated form submission may arrive after the first one completed.
+        // Replay the same redirect only for the same authenticated browser session.
+        const completed = completedAuthorizations.get(pendingId);
+        if (
+          completed &&
+          completed.expiresAt > Date.now() &&
+          completed.sessionId === sessionId
+        ) {
+          redirect(res, completed.location);
+          return;
+        }
+        if (completed && completed.expiresAt <= Date.now()) {
+          completedAuthorizations.delete(pendingId);
+        }
         console.error("OAuth approval failed: pending request not found.");
         json(res, 400, {
           error: "invalid_request",
           error_description:
-            "Pending authorization request not found. Start again from Claude.",
+            "Pending authorization request not found or expired. Start a new connection from Claude.",
         });
         return;
       }
@@ -416,7 +437,13 @@ const httpServer = createHttpServer(async (req, res) => {
         const target = new URL(pending.redirectUri);
         target.searchParams.set("error", "access_denied");
         target.searchParams.set("state", pending.state);
-        redirect(res, target.toString());
+        const location = target.toString();
+        completedAuthorizations.set(pendingId, {
+          sessionId,
+          location,
+          expiresAt: Date.now() + AUTH_CODE_TTL_MS,
+        });
+        redirect(res, location);
         return;
       }
       const code = randomToken(32);
@@ -430,7 +457,14 @@ const httpServer = createHttpServer(async (req, res) => {
       const target = new URL(pending.redirectUri);
       target.searchParams.set("code", code);
       target.searchParams.set("state", pending.state);
-      redirect(res, target.toString());
+      const location = target.toString();
+      completedAuthorizations.set(pendingId, {
+        sessionId,
+        location,
+        expiresAt: Date.now() + AUTH_CODE_TTL_MS,
+      });
+
+      redirect(res, location);
       return;
     }
 
