@@ -20,5 +20,20 @@ Client --HTTPS--> tunnel --HTTP--> `httpServer.ts` (auth, size limit, /health) -
 ## 5. Verification
 `npm test` builds the project and runs 20 tests: traversal (relative, absolute, sibling-prefix, NUL) against all file tools, symlink and dangling-symlink escapes, delete gating, error messages, and an HTTP suite against the compiled server (auth 401, 404, 413, initialize, tools/list = 13, tool calls, audit log).
 
+## Security Test Evidence
+
+The security test suite completed with 10 passing tests,
+0 failing tests, and 3 skipped tests out of 13 total.
+
+The executed tests cover workspace path containment,
+path traversal rejection, protected files and directories,
+and error handling.
+
+Three symlink-related tests were skipped. Therefore,
+the results do not establish that all symlink attack
+scenarios have been verified.
+
+![Security test results](images/security-tests.png)
+
 ## 6. Limitations
 Quick-tunnel URL changes on restart (use a named tunnel for a stable URL). No automated test for PM2/tunnel — verified manually per docs/DEPLOYMENT.md.
