@@ -55,7 +55,6 @@ Check `package.json` for the exact dependency versions and available scripts.
 | `copy` | Copies a supported item. |
 | `tree` | Displays the workspace directory structure. |
 | `delete_folder` | Recursively deletes an existing directory and its contents|
-File operations are intended to remain inside the configured workspace. Paths that attempt to escape the workspace are rejected by the path-security checks.
 
 ## Requirements
 
