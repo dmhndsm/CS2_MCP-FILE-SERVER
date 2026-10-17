@@ -17,6 +17,7 @@ import { makeDirectory } from "./tools/mkdir.js";
 import { getFileInfo } from "./tools/file_info.js";
 import { copyFile } from "./tools/copy.js";
 import { getTree } from "./tools/tree.js";
+import { deleteFolder } from "./tools/delete_folder.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -272,6 +273,49 @@ export function createServer() {
             {
               type: "text",
               text: `Error deleting file: ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    },
+  );
+
+  
+  // Delete Folder
+  server.registerTool(
+    "delete_folder",
+    {
+      description:
+        "Permanently delete an existing directory and its contents inside the workspace. Cannot delete the workspace root.",
+      inputSchema: {
+        path: z
+          .string()
+          .min(1)
+          .max(512)
+          .describe("Relative path of the folder to delete"),
+      },
+    },
+    async ({ path: folderPath }) => {
+      try {
+        await deleteFolder(workspaceRoot, folderPath);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Folder deleted successfully: ${folderPath}`,
+            },
+          ],
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error deleting folder: ${
                 error instanceof Error ? error.message : String(error)
               }`,
             },
