@@ -59,7 +59,7 @@ test("initialize + tools/list returns 13 tools", async () => {
   const init = await rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } });
   assert.equal(init.status, 200);
   const list = await rpc("tools/list", {}, 2);
-  assert.equal(list.body.result.tools.length, 13);
+  assert.equal(list.body.result.tools.length, 14);
 });
 test("write/read/append over HTTP and traversal is an isError result", async () => {
   await rpc("tools/call", { name: "write", arguments: { path: "demo.txt", content: "hi" } }, 3);

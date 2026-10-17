@@ -37,6 +37,7 @@ Check `package.json` for the exact dependency versions and available scripts.
 - Automated tests for file operations, security controls, and HTTP behavior
 - PM2 process configuration and HTTPS tunnel deployment instructions
 
+#
 ## Available MCP Tools
 
 | Tool | Description |
@@ -48,13 +49,17 @@ Check `package.json` for the exact dependency versions and available scripts.
 | `append` | Appends content to a file. |
 | `str_replace` | Replaces specified text in a file. |
 | `delete` | Deletes a file, subject to safeguards. |
+| `delete_folder` | Recursively deletes an existing folder and its contents inside the workspace. |
 | `search` | Searches workspace files for text. |
 | `move` | Moves or renames a supported item. |
 | `mkdir` | Creates a directory. |
 | `file_info` | Returns information about a file or directory. |
 | `copy` | Copies a supported item. |
 | `tree` | Displays the workspace directory structure. |
-| `delete_folder` | Recursively deletes an existing directory and its contents|
+
+File operations are restricted to the configured workspace. Paths that attempt to escape the workspace should be rejected by the path-security checks.
+
+The `delete_folder` tool is destructive. It should reject attempts to delete the workspace root or paths outside the workspace. Verify symbolic-link handling and deletion safeguards before using it with important data.
 
 ## Requirements
 
@@ -249,6 +254,28 @@ npx tsc --noEmit
 
 A successful TypeScript check completes without TypeScript errors.
 
+
+### Testing `delete_folder`
+
+Before using `delete_folder` with important data, verify its behavior using a temporary test directory inside the configured workspace.
+
+1. Create a temporary directory containing a sample file.
+2. Call `delete_folder` with the directory's relative path.
+3. Confirm that the directory and its contents have been removed.
+4. Verify that attempts to delete the workspace root are rejected.
+5. Verify that paths outside the workspace are rejected.
+6. Check symbolic-link handling and error responses before using the tool with important data.
+
+Run the build and automated tests after implementing the tool:
+
+```powershell
+npm run build
+npm test
+npm run typecheck
+```
+
+Only report these checks as passing after running them against the current project version.
+
 ### Recorded Automated Test Results
 
 The documented full test run produced the following results:
@@ -339,30 +366,44 @@ The project follows this general structure:
 ```text
 mcp-file-server/
 ├── src/
-│   ├── server.ts
-│   ├── httpServer.ts
 │   ├── tools/
-│   └── utils/
-│       ├── pathSecurity.ts
-│       └── auditLog.ts
+│   ├── tools/
+│   │   ├── delete.ts
+│   │   ├── delete_folder.ts
+│   │   ├── file_info.ts
+│   │   ├── list.ts
+│   │   ├── mkdir.ts
+│   │   ├── move.ts
+│   │   ├── read.ts
+│   │   ├── search.ts
+│   │   ├── str_replace.ts
+│   │   ├── tree.ts
+│   │   └── write.ts
+│   ├── utils/
+│   │   ├── pathSecurity.ts
+│   │   └── auditLog.ts
+│   ├── httpServer.ts
+│   └── server.ts
 ├── test/
+│   ├── http.test.ts
+│   └── security.test.ts
 ├── workspace/
-│   ├── PROJECT_STATE.md
-│   ├── PLAN_LOG.md
+│   ├── .gitkeep
 │   ├── CHECKPOINTS.md
-│   └── DECISIONS.md
+│   ├── DECISIONS.md
+│   ├── PLAN_LOG.md
+│   └── PROJECT_STATE.md
 ├── docs/
 │   ├── DEPLOYMENT.md
 │   ├── TECHNICAL_REPORT.md
 │   └── images/
-│       ├── server-running.png
-│       ├── tool-tests.png
-│       └── security-tests.png
 ├── ecosystem.config.cjs
 ├── manifest.json
 ├── package.json
 ├── package-lock.json
 ├── tsconfig.json
+├── tsconfig.test.json
+├── verify-test.json
 └── README.md
 ```
 
