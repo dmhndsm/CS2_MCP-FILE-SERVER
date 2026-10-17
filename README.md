@@ -2,7 +2,7 @@
 
 A custom Model Context Protocol (MCP) file server that provides controlled file operations inside a sandboxed workspace.
 
-The server supports local MCP connections through **stdio** and remote MCP connections through **Streamable HTTP**. It provides 13 dedicated tools for file operations while restricting requested paths to the configured workspace.
+The server supports local MCP connections through **stdio** and remote MCP connections through **Streamable HTTP**. It provides 14 dedicated tools for file operations while restricting requested paths to the configured workspace.
 
 ## Project Overview
 
@@ -25,7 +25,7 @@ Check `package.json` for the exact dependency versions and available scripts.
 
 - Sandboxed workspace for file operations
 - Workspace path validation and symbolic-link checks
-- 13 single-purpose MCP tools
+- 14 single-purpose MCP tools
 - Stdio transport for local MCP clients
 - Streamable HTTP transport at `/mcp`
 - Bearer-token authentication for HTTP requests
@@ -54,6 +54,7 @@ Check `package.json` for the exact dependency versions and available scripts.
 | `file_info` | Returns information about a file or directory. |
 | `copy` | Copies a supported item. |
 | `tree` | Displays the workspace directory structure. |
+| `delete_folder` | Recursively deletes an existing directory and its contents, subject to workspace and safety checks. |
 
 File operations are intended to remain inside the configured workspace. Paths that attempt to escape the workspace are rejected by the path-security checks.
 
@@ -226,7 +227,7 @@ The expected response body is:
 
 Mutating operations are recorded in a JSON-lines audit log according to the current implementation. The location can be overridden with `AUDIT_LOG`, and logging can be disabled with `AUDIT_LOG=off`.
 
-The `delete` tool is intended to delete files and refuses the four handoff files. Review the implementation and configuration before using the server with important data.
+The `delete` tool is intended to delete files and refuses the four handoff files. The `delete_folder` tool is intended to recursively remove an existing directory and its contents. Because folder deletion is destructive, verify its implementation and safeguards before use, test it only with disposable folders first, and do not use it on important data until its behavior has been verified.
 
 ## Testing and Type Checking
 
@@ -327,7 +328,8 @@ Only use screenshots from the current project version. Before committing screens
 - Use HTTPS for remote connections.
 - Do not expose the local development server directly to the public internet without appropriate security and deployment configuration.
 - Use a dedicated workspace and avoid storing sensitive files inside it.
-- Review destructive operations such as `delete` before production use.
+- Review destructive operations such as `delete` and `delete_folder` before production use.
+- `delete_folder` should reject the workspace root and paths outside the workspace; verify symlink handling and filesystem race protections before exposing it to remote clients.
 - Do not publish `MCP_AUTH_TOKEN`, `MCP_OAUTH_PASSWORD`, access tokens, authorization codes, session cookies, or PKCE verifiers.
 
 For architecture details, security trade-offs, and known limitations, see the [Technical Report](docs/TECHNICAL_REPORT.md).
@@ -385,7 +387,7 @@ Keep these documents consistent with the current implementation. Update them whe
 
 According to the current project files and recorded development work, the project includes:
 
-- MCP server with 13 tools
+- MCP server with 14 tools (including `delete_folder`, pending build and safety-test verification)
 - Workspace sandbox and path validation
 - Stdio transport
 - Streamable HTTP transport
